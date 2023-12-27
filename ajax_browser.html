@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PHP基礎編</title>
+</head>
+<body>
+  <button id="refresh-btn">更新</button>
+  <div id="outputDiv">SAMURAI</div>
+
+  <script>
+    const refreshBtn = document.getElementById('refresh-btn');
+    const outputDiv = document.getElementById('outputDiv');
+    let intervalId;  //定期実行のチェック用の変数
+
+    //非同期通信でサーバー側かデータを取得する関数
+    fetchFromServer=()=>{
+      const dispDate = {
+        name : outputDiv.textContent
+      };
+
+      // サーバー側にAjaxリクエストを送信
+      fetch('ajax_server.php' , {
+        method: 'POST',
+        headers: {'Content-Type': 'applocation/json'},
+        body: JSON.stringify(dispDate) //jsonに形式を変換
+      })
+      //サーバー側からAjaxレスポンスを受け取ったときの処理
+      .then((response) => response.json())
+      .then((date) => {
+        outputDiv.textContent = date.message;
+      })
+    }
+
+    refreshBtn.addEventListener('click', ()=>{
+      if(intervalId){
+       clearInterval(intervalId);
+       intervalId = 0;
+       refreshBtn.textContent = '更新'; 
+      } else {
+        intervalId = setInterval(fetchFromServer ,1000);
+        refreshBtn.textContent = '停止';
+      }
+    })
+  </script>
+</body>
+</html>
