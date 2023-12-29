@@ -1,10 +1,44 @@
 <?php
+
+session_start();
+
 //fomr.phpからのPOSTリクエストを取得
 $name = $_POST['user_name'];
 $email = $_POST['user_email'];
 $gender = $_POST['user_gender'];
 $category = $_POST['category'];
 $message = $_POST['message'];
+
+//エラーメッセージを格納する配列
+$errors = [];
+
+if(empty($name)){
+  $errors[] = 'お名前を入力してください。';
+}
+
+if(empty($email)){
+  $errors[] = 'メールアドレスを入力してください。';
+} elseif(!filter_var($email,FILTER_VALIDATE_EMAIL)){
+  $errors[] = 'メールアドレスの入力形式が正しくありません。'; 
+}
+
+if(empty($message)){
+  $errors[] = 'お問い合わせ内容を入力して下さい。';
+}elseif(mb_strlen($message)>100){
+  $errors[] = 'お問い合わせ内容が100文字を超えています。';
+}
+
+//入力項目に問題がなければセッションクッキーを保存
+if(empty($errors)){
+  $_SESSION['name'] = $name;
+  $_SESSION['email'] = $email;
+  $_SESSION['gender'] = $gender;
+  $_SESSION['category'] = $category;
+  $_SESSION['message'] = $message;
+
+  setcookie('name' , $name , time() +3600);
+  setcookie('email' , $email , time() + 3600);
+}
 ?>
 
 <!DOCTYPE html>
@@ -47,5 +81,15 @@ $message = $_POST['message'];
     <button id="confirm-btn" onclick="location.href='complete.php';">確定</button> <!--location.href='移動先'-->
     <button id="cancel-btn" onclick="history.back();">キャンセル</button>   <!--history.back() 一つまえに戻る-->
   </p>
+  <?php
+  if(!empty($errors)){
+    foreach($errors as $error){
+      echo '<font color="red">' . $error . '</font>' . '<br>';
+    }
+
+    //確定ボタンを無効化する
+    echo '<script> document.getElementById("confirm-btn").disabled = true;</script>';
+  }
+  ?>
 </body>
 </html>
